@@ -1,11 +1,18 @@
 const knex = require('knex');
 const config = require('./env');
 
+const isProduction = config.NODE_ENV === 'production';
+
 const knexConfig = {
   client: 'pg',
-  connection: config.DATABASE_URL,
-  pool: { min: 2, max: 10 },
-  acquireConnectionTimeout: 10000
+  connection: isProduction
+    ? {
+        connectionString: config.DATABASE_URL,
+        ssl: { rejectUnauthorized: false }
+      }
+    : config.DATABASE_URL,
+  pool: { min: 0, max: 5 },
+  acquireConnectionTimeout: 30000
 };
 
 const db = knex(knexConfig);

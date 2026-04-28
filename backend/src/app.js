@@ -37,6 +37,8 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) return callback(null, true);
     // Allow file:// origins (Electron desktop)
     if (origin.startsWith('file://')) return callback(null, true);
+    // Allow all Vercel deployment URLs
+    if (origin.endsWith('.vercel.app')) return callback(null, true);
     callback(null, true);
   },
   credentials: true,
