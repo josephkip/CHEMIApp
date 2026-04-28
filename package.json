@@ -15,7 +15,7 @@
     "migrate": "cd backend && npx knex migrate:latest --knexfile knexfile.js",
     "seed": "cd backend && npx knex seed:run --knexfile knexfile.js",
     "db:setup": "npm run migrate && npm run seed",
-    "build": "cd frontend && npm install && npm run build"
+    "build": "npm run build --workspace=moreran-chemist-frontend"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
