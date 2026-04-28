@@ -1,5 +1,4 @@
 {
-  "installCommand": "npm install && cd backend && npm install",
   "rewrites": [
     {
       "source": "/api/(.*)",
