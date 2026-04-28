@@ -1,0 +1,56 @@
+{
+  "name": "chemiapp-desktop",
+  "version": "1.0.0",
+  "description": "CHEMIApp - Pharmacy Management Desktop App",
+  "main": "main.js",
+  "author": "CHEMIApp",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.chemiapp.pharmacy",
+    "productName": "CHEMIApp",
+    "directories": {
+      "output": "../releases"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "frontend/**/*",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../backend",
+        "to": "backend",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "../.env",
+        "to": ".env"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "frontend/icons/icon-512.png"
+    },
+    "portable": {
+      "artifactName": "CHEMIApp-${version}-Portable.exe"
+    }
+  },
+  "dependencies": {
+    "electron-is-dev": "^2.0.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  }
+}

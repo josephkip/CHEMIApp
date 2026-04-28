@@ -1,0 +1,17 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+.env.production
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+coverage/
+.vscode/
+releases/
+desktop/dist/
+desktop/build/
+*.exe
+*.zip
