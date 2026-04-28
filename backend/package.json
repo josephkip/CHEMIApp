@@ -8,7 +8,8 @@
     "dev": "nodemon src/server.js",
     "migrate": "knex migrate:latest --knexfile knexfile.js",
     "migrate:rollback": "knex migrate:rollback --knexfile knexfile.js",
-    "seed": "knex seed:run --knexfile knexfile.js"
+    "seed": "knex seed:run --knexfile knexfile.js",
+    "build": "echo 'Backend build complete'"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
