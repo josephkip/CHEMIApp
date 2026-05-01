@@ -31,7 +31,7 @@ export default function App() {
         <Route path="/procurement" element={<Procurement />} />
         <Route path="/stock-take" element={<StockTake />} />
         <Route path="/analytics" element={<ProtectedRoute adminOnly><Analytics /></ProtectedRoute>} />
-        <Route path="/users" element={<ProtectedRoute adminOnly><UserManagement /></ProtectedRoute>} />
+        <Route path="/users" element={<ProtectedRoute superAdminOnly><UserManagement /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute adminOnly><Settings /></ProtectedRoute>} />
       </Route>
       <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
