@@ -4,14 +4,13 @@ const knex = require('./config/database');
 async function elevate() {
   try {
     const updated = await knex('users')
-      .whereIn('username', ['jkk', 'admin'])
+      .where('role', 'admin')
       .update({ role: 'super_admin' });
-    
-    console.log(`Successfully elevated ${updated} user(s) to super_admin.`);
-  } catch(e) {
-    console.error(e);
+    console.log(`Elevated ${updated} admins to super_admin.`);
+  } catch (error) {
+    console.error('Error:', error);
   } finally {
-    process.exit(0);
+    process.exit();
   }
 }
 elevate();

@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const auth = require('../controllers/auth.controller');
 const authenticate = require('../middleware/auth');
-const { adminOnly, superAdminOnly } = require('../middleware/roleGuard');
+const { superAdminOnly } = require('../middleware/roleGuard');
 
 router.post('/login', auth.login);
 router.post('/register', authenticate, superAdminOnly, auth.register);
