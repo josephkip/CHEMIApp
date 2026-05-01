@@ -99,8 +99,10 @@ export default function AddItem() {
               <input className="form-input" type="number" min="0" step="0.01" value={form.profit_margin} onChange={e=>set('profit_margin',e.target.value)} placeholder="e.g. 20" />
             </div>
             <div className="form-group">
-              <label className="form-label">Selling Price (KES) *</label>
-              <input className="form-input" type="number" min="0" step="0.01" value={form.selling_price} onChange={e=>set('selling_price',e.target.value)} required />
+              <label className="form-label">Selling Price (Auto-calculated KES)</label>
+              <div className="form-input" style={{ backgroundColor: 'var(--bg-color)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
+                {form.selling_price || '0.00'}
+              </div>
             </div>
           </div>
           <div className="form-row">
