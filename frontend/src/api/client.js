@@ -1,11 +1,7 @@
 import axios from 'axios';
 
-// Detect if running inside Electron desktop app
-const isDesktop = window.electronAPI?.isDesktop;
-
-// In Electron, the frontend is loaded from file:// so we need absolute URL
-// In dev/web mode, Vite proxy handles /api -> localhost:5000
-const baseURL = isDesktop ? 'http://localhost:5000/api' : '/api';
+// Route all API calls directly to the live Vercel backend
+const baseURL = 'https://chemi-app-cvjv.vercel.app/api';
 
 const api = axios.create({
   baseURL,
@@ -29,8 +25,8 @@ api.interceptors.response.use(
       const refreshToken = localStorage.getItem('chemiapp-refresh');
       if (refreshToken) {
         try {
-          const refreshURL = isDesktop ? 'http://localhost:5000/api/auth/refresh' : '/api/auth/refresh';
-          const { data } = await axios.post(refreshURL, { refreshToken });
+          const refreshURL = '/auth/refresh'; // use relative URL so baseURL is prepended
+          const { data } = await api.post(refreshURL, { refreshToken });
           localStorage.setItem('chemiapp-token', data.token);
           error.config.headers.Authorization = `Bearer ${data.token}`;
           return api(error.config);

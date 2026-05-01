@@ -19,35 +19,42 @@
     "files": [
       "main.js",
       "preload.js",
-      "frontend/**/*",
-      "node_modules/**/*"
-    ],
-    "extraResources": [
       {
-        "from": "../backend",
-        "to": "backend",
-        "filter": ["**/*"]
-      },
-      {
-        "from": "../.env",
-        "to": ".env"
+        "from": "../frontend/dist",
+        "to": "frontend",
+        "filter": [
+          "**/*"
+        ]
       }
     ],
+    "extraResources": [],
     "win": {
       "target": [
         {
-          "target": "portable",
-          "arch": ["x64"]
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "frontend/icons/icon-512.png"
     },
-    "portable": {
-      "artifactName": "CHEMIApp-${version}-Portable.exe"
-    }
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "CHEMIApp-${version}-Setup.exe"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "josephkip",
+        "repo": "CHEMIApp"
+      }
+    ]
   },
   "dependencies": {
-    "electron-is-dev": "^2.0.0"
+    "electron-is-dev": "^2.0.0",
+    "electron-updater": "^6.8.3"
   },
   "devDependencies": {
     "electron": "^33.0.0",

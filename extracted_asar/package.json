@@ -1,0 +1,11 @@
+{
+  "name": "chemiapp-desktop",
+  "version": "1.0.0",
+  "description": "CHEMIApp - Pharmacy Management Desktop App",
+  "main": "main.js",
+  "author": "CHEMIApp",
+  "license": "MIT",
+  "dependencies": {
+    "electron-is-dev": "^2.0.0"
+  }
+}
