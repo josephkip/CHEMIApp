@@ -17,13 +17,13 @@ const navItems = [
     { path: '/analytics', icon: '📈', label: 'Analytics', adminOnly: true },
   ]},
   { section: 'Admin', adminOnly: true, items: [
-    { path: '/users', icon: '👥', label: 'Users', adminOnly: true },
+    { path: '/users', icon: '👥', label: 'Users', superAdminOnly: true },
     { path: '/settings', icon: '⚙️', label: 'Settings', adminOnly: true },
   ]},
 ];
 
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isSuperAdmin } = useAuth();
   const location = useLocation();
 
   return (
@@ -37,11 +37,13 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
         <nav className="sidebar-nav">
           {navItems.map(section => {
             if (section.adminOnly && !isAdmin) return null;
+            if (section.superAdminOnly && !isSuperAdmin) return null;
             return (
               <div key={section.section}>
                 <div className="nav-section-title">{section.section}</div>
                 {section.items.map(item => {
                   if (item.adminOnly && !isAdmin) return null;
+                  if (item.superAdminOnly && !isSuperAdmin) return null;
                   return (
                     <NavLink key={item.path} to={item.path} onClick={onMobileClose}
                       className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>

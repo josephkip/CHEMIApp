@@ -13,7 +13,11 @@ function roleGuard(...allowedRoles) {
 }
 
 function adminOnly(req, res, next) {
-  return roleGuard(ROLES.ADMIN)(req, res, next);
+  return roleGuard(ROLES.ADMIN, ROLES.SUPER_ADMIN)(req, res, next);
 }
 
-module.exports = { roleGuard, adminOnly };
+function superAdminOnly(req, res, next) {
+  return roleGuard(ROLES.SUPER_ADMIN)(req, res, next);
+}
+
+module.exports = { roleGuard, adminOnly, superAdminOnly };

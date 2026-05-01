@@ -1,10 +1,10 @@
 const router = require('express').Router();
 const users = require('../controllers/users.controller');
 const authenticate = require('../middleware/auth');
-const { adminOnly } = require('../middleware/roleGuard');
+const { superAdminOnly } = require('../middleware/roleGuard');
 
 router.use(authenticate);
-router.use(adminOnly);
+router.use(superAdminOnly);
 
 router.get('/', users.getAll);
 router.put('/:id', users.update);

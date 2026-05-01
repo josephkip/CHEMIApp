@@ -61,7 +61,7 @@ export default function UserManagement() {
                 <td><strong>{u.full_name}</strong></td>
                 <td>{u.username}</td>
                 <td style={{fontSize:'.85rem'}}>{u.email}</td>
-                <td><span className={`badge ${u.role==='admin'?'badge-primary':'badge-info'}`}>{u.role}</span></td>
+                <td><span className={`badge ${u.role==='super_admin'?'badge-danger':u.role==='admin'?'badge-primary':'badge-info'}`}>{u.role}</span></td>
                 <td><span className={`status-dot ${u.is_active?'active':'inactive'}`}></span>{u.is_active?'Active':'Inactive'}</td>
                 <td style={{fontSize:'.8rem',color:'var(--text-muted)'}}>{u.last_login ? new Date(u.last_login).toLocaleString() : 'Never'}</td>
                 <td>
@@ -90,12 +90,14 @@ export default function UserManagement() {
                 <div className="form-group"><label className="form-label">Password</label><input className="form-input" type="password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})} required minLength={6} /></div>
                 <div className="form-group"><label className="form-label">Role</label>
                   <select className="form-input form-select" value={form.role} onChange={e=>setForm({...form,role:e.target.value})}>
-                    <option value="sales_attendant">Sales Attendant</option><option value="admin">Admin</option>
+                    <option value="sales_attendant">Sales Attendant</option>
+                    <option value="admin">Admin</option>
+                    <option value="super_admin">Super Admin</option>
                   </select>
                 </div>
               </div>
               
-              {form.role !== 'admin' && (
+              {form.role === 'sales_attendant' && (
                 <div className="form-group" style={{marginTop: 15, padding: 15, background: 'var(--surface-color)', borderRadius: 8}}>
                   <label className="form-label">Permissions</label>
                   <div style={{display: 'flex', flexDirection: 'column', gap: 10}}>
