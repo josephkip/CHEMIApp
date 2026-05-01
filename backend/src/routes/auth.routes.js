@@ -7,6 +7,7 @@ router.post('/login', auth.login);
 router.post('/register', authenticate, superAdminOnly, auth.register);
 router.post('/refresh', auth.refreshToken);
 router.put('/change-password', authenticate, auth.changePassword);
+router.put('/profile', authenticate, auth.updateProfile);
 router.get('/me', authenticate, auth.me);
 
 module.exports = router;

@@ -24,6 +24,14 @@ exports.changePassword = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const { full_name, username } = req.body;
+    const result = await authService.updateProfile(req.user.id, full_name, username);
+    res.json(result);
+  } catch (err) { next(err); }
+};
+
 exports.refreshToken = async (req, res, next) => {
   try {
     const { refreshToken } = req.body;

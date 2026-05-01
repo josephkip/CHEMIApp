@@ -38,11 +38,20 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  const updateUser = useCallback((userData, newToken) => {
+    if (newToken) {
+      localStorage.setItem('chemiapp-token', newToken);
+      api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+      setToken(newToken);
+    }
+    setUser(userData);
+  }, []);
+
   const isSuperAdmin = user?.role === 'super_admin';
   const isAdmin = isSuperAdmin || user?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout, isAdmin, isSuperAdmin }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout, updateUser, isAdmin, isSuperAdmin }}>
       {children}
     </AuthContext.Provider>
   );

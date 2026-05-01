@@ -96,6 +96,27 @@ class AuthService {
     return { message: 'Password changed successfully' };
   }
 
+  async updateProfile(userId, full_name, username) {
+    const existing = await db('users')
+      .where('username', username)
+      .whereNot('id', userId)
+      .first();
+
+    if (existing) {
+      const err = new Error('Username already taken');
+      err.type = 'conflict';
+      throw err;
+    }
+
+    const [user] = await db('users')
+      .where('id', userId)
+      .update({ full_name, username, updated_at: new Date() })
+      .returning(['id', 'username', 'email', 'full_name', 'role', 'permissions']);
+
+    const newToken = this.generateToken(user);
+    return { user, token: newToken, message: 'Profile updated successfully' };
+  }
+
   async refreshToken(token) {
     try {
       const decoded = jwt.verify(token, config.JWT_SECRET);

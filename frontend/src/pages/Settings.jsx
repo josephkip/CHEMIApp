@@ -4,7 +4,7 @@ import { useNotification } from '../context/NotificationContext';
 import api from '../api/client';
 
 export default function Settings() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const notify = useNotification();
   const [passwords, setPasswords] = useState({ currentPassword:'', newPassword:'', confirmPassword:'' });
   const [loading, setLoading] = useState(false);
@@ -66,9 +66,29 @@ export default function Settings() {
       <div className="grid-2">
         <div className="card">
           <h3 style={{fontSize:'1.1rem',fontWeight:700,marginBottom:16}}>👤 Account Info</h3>
-          <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" value={user?.full_name||''} disabled /></div>
-          <div className="form-group"><label className="form-label">Username</label><input className="form-input" value={user?.username||''} disabled /></div>
-          <div className="form-group"><label className="form-label">Role</label><input className="form-input" value={user?.role||''} disabled /></div>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setLoading(true);
+            try {
+              const { data } = await api.put('/auth/profile', {
+                full_name: e.target.full_name.value,
+                username: e.target.username.value
+              });
+              updateUser(data.user, data.token);
+              notify.success('Profile updated successfully');
+            } catch (err) {
+              notify.error(err.response?.data?.error || 'Failed to update profile');
+            } finally {
+              setLoading(false);
+            }
+          }}>
+            <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" name="full_name" defaultValue={user?.full_name||''} disabled={user?.role !== 'super_admin'} required /></div>
+            <div className="form-group"><label className="form-label">Username</label><input className="form-input" name="username" defaultValue={user?.username||''} disabled={user?.role !== 'super_admin'} required /></div>
+            <div className="form-group"><label className="form-label">Role</label><input className="form-input" value={user?.role||''} disabled /></div>
+            {user?.role === 'super_admin' && (
+              <button className="btn btn-primary" type="submit" disabled={loading}>{loading?'Saving...':'Update Profile'}</button>
+            )}
+          </form>
         </div>
 
         <div className="card">
