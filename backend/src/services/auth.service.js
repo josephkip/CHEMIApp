@@ -40,7 +40,8 @@ class AuthService {
         username: user.username,
         email: user.email,
         full_name: user.full_name,
-        role: user.role
+        role: user.role,
+        permissions: typeof user.permissions === 'string' ? JSON.parse(user.permissions) : user.permissions
       }
     };
   }
@@ -67,8 +68,9 @@ class AuthService {
       full_name: userData.full_name,
       password_hash: passwordHash,
       role: userData.role || 'sales_attendant',
+      permissions: userData.permissions || JSON.stringify({ can_make_sales: true, can_receive_payments: true, can_edit_stock: false }),
       is_active: true
-    }).returning(['id', 'username', 'email', 'full_name', 'role', 'created_at']);
+    }).returning(['id', 'username', 'email', 'full_name', 'role', 'permissions', 'created_at']);
 
     return user;
   }
@@ -116,7 +118,13 @@ class AuthService {
 
   generateToken(user) {
     return jwt.sign(
-      { id: user.id, username: user.username, role: user.role, full_name: user.full_name },
+      { 
+        id: user.id, 
+        username: user.username, 
+        role: user.role, 
+        full_name: user.full_name,
+        permissions: typeof user.permissions === 'string' ? JSON.parse(user.permissions) : user.permissions 
+      },
       config.JWT_SECRET,
       { expiresIn: config.JWT_EXPIRES_IN }
     );

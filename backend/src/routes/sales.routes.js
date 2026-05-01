@@ -8,5 +8,6 @@ router.post('/', sales.create);
 router.get('/', sales.getAll);
 router.get('/:id', sales.getById);
 router.get('/:id/receipt', sales.getReceipt);
+router.put('/:id/complete', sales.completeSale);
 
 module.exports = router;

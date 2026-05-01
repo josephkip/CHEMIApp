@@ -7,9 +7,11 @@ class ItemsService {
     const { page, limit, offset } = parsePagination(query);
     let q = db('items')
       .leftJoin('categories', 'items.category_id', 'categories.id')
+      .leftJoin('suppliers', 'items.supplier_id', 'suppliers.id')
       .select(
         'items.*',
-        'categories.name as category_name'
+        'categories.name as category_name',
+        'suppliers.name as supplier_name'
       )
       .where('items.is_active', true);
 
@@ -54,7 +56,8 @@ class ItemsService {
   async getById(id) {
     const item = await db('items')
       .leftJoin('categories', 'items.category_id', 'categories.id')
-      .select('items.*', 'categories.name as category_name')
+      .leftJoin('suppliers', 'items.supplier_id', 'suppliers.id')
+      .select('items.*', 'categories.name as category_name', 'suppliers.name as supplier_name')
       .where('items.id', id)
       .first();
 
@@ -78,6 +81,8 @@ class ItemsService {
       expiry_date: data.expiry_date || null,
       batch_number: data.batch_number || null,
       supplier: data.supplier || null,
+      supplier_id: data.supplier_id || null,
+      profit_margin: data.profit_margin || 0,
       unit: data.unit || 'pcs',
       description: data.description || null
     }).returning('*');
@@ -115,6 +120,8 @@ class ItemsService {
       expiry_date: data.expiry_date !== undefined ? data.expiry_date : existing.expiry_date,
       batch_number: data.batch_number !== undefined ? data.batch_number : existing.batch_number,
       supplier: data.supplier !== undefined ? data.supplier : existing.supplier,
+      supplier_id: data.supplier_id !== undefined ? data.supplier_id : existing.supplier_id,
+      profit_margin: data.profit_margin !== undefined ? data.profit_margin : existing.profit_margin,
       unit: data.unit !== undefined ? data.unit : existing.unit,
       description: data.description !== undefined ? data.description : existing.description,
       updated_at: new Date()

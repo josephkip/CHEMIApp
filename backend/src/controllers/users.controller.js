@@ -2,17 +2,21 @@ const db = require('../config/database');
 
 exports.getAll = async (req, res, next) => {
   try {
-    const users = await db('users').select('id', 'username', 'email', 'full_name', 'role', 'is_active', 'last_login', 'created_at').orderBy('created_at', 'desc');
+    const users = await db('users').select('id', 'username', 'email', 'full_name', 'role', 'permissions', 'is_active', 'last_login', 'created_at').orderBy('created_at', 'desc');
     res.json(users);
   } catch (err) { next(err); }
 };
 
 exports.update = async (req, res, next) => {
   try {
-    const { full_name, email, role } = req.body;
+    const { full_name, email, role, permissions } = req.body;
+    
+    const updateData = { full_name, email, role, updated_at: new Date() };
+    if (permissions !== undefined) updateData.permissions = permissions;
+
     const [user] = await db('users').where('id', req.params.id)
-      .update({ full_name, email, role, updated_at: new Date() })
-      .returning(['id', 'username', 'email', 'full_name', 'role', 'is_active']);
+      .update(updateData)
+      .returning(['id', 'username', 'email', 'full_name', 'role', 'permissions', 'is_active']);
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json(user);
   } catch (err) { next(err); }

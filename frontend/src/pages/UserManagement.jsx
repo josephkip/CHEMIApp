@@ -7,7 +7,10 @@ export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
-  const [form, setForm] = useState({ username:'', email:'', full_name:'', password:'', role:'sales_attendant' });
+  const [form, setForm] = useState({ 
+    username:'', email:'', full_name:'', password:'', role:'sales_attendant',
+    permissions: { can_make_sales: true, can_receive_payments: true, can_edit_stock: false }
+  });
 
   const fetchUsers = () => { api.get('/users').then(r => setUsers(r.data)).finally(() => setLoading(false)); };
   useEffect(() => { fetchUsers(); }, []);
@@ -15,9 +18,11 @@ export default function UserManagement() {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/auth/register', form);
+      const payload = { ...form, permissions: JSON.stringify(form.permissions) };
+      await api.post('/auth/register', payload);
       notify.success('User created successfully');
-      setModal(false); setForm({ username:'', email:'', full_name:'', password:'', role:'sales_attendant' });
+      setModal(false); 
+      setForm({ username:'', email:'', full_name:'', password:'', role:'sales_attendant', permissions: { can_make_sales: true, can_receive_payments: true, can_edit_stock: false } });
       fetchUsers();
     } catch (err) { notify.error(err.response?.data?.error || 'Failed to create user'); }
   };
@@ -89,6 +94,27 @@ export default function UserManagement() {
                   </select>
                 </div>
               </div>
+              
+              {form.role !== 'admin' && (
+                <div className="form-group" style={{marginTop: 15, padding: 15, background: 'var(--surface-color)', borderRadius: 8}}>
+                  <label className="form-label">Permissions</label>
+                  <div style={{display: 'flex', flexDirection: 'column', gap: 10}}>
+                    <label style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                      <input type="checkbox" checked={form.permissions.can_make_sales} onChange={e => setForm({...form, permissions: {...form.permissions, can_make_sales: e.target.checked}})} />
+                      Can Make Sales (Attendant)
+                    </label>
+                    <label style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                      <input type="checkbox" checked={form.permissions.can_receive_payments} onChange={e => setForm({...form, permissions: {...form.permissions, can_receive_payments: e.target.checked}})} />
+                      Can Receive Payments (Cashier)
+                    </label>
+                    <label style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                      <input type="checkbox" checked={form.permissions.can_edit_stock} onChange={e => setForm({...form, permissions: {...form.permissions, can_edit_stock: e.target.checked}})} />
+                      Can Edit Stock / Perform Stock Take
+                    </label>
+                  </div>
+                </div>
+              )}
+              
               <div className="modal-footer"><button className="btn btn-secondary" type="button" onClick={()=>setModal(false)}>Cancel</button><button className="btn btn-primary" type="submit">Create User</button></div>
             </form>
           </div>

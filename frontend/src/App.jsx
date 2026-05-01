@@ -11,6 +11,8 @@ import AddItem from './pages/AddItem';
 import Analytics from './pages/Analytics';
 import UserManagement from './pages/UserManagement';
 import Settings from './pages/Settings';
+import Procurement from './pages/Procurement';
+import StockTake from './pages/StockTake';
 
 export default function App() {
   const { user, loading } = useAuth();
@@ -26,6 +28,8 @@ export default function App() {
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/inventory/add" element={<ProtectedRoute adminOnly><AddItem /></ProtectedRoute>} />
         <Route path="/inventory/edit/:id" element={<ProtectedRoute adminOnly><AddItem /></ProtectedRoute>} />
+        <Route path="/procurement" element={<Procurement />} />
+        <Route path="/stock-take" element={<StockTake />} />
         <Route path="/analytics" element={<ProtectedRoute adminOnly><Analytics /></ProtectedRoute>} />
         <Route path="/users" element={<ProtectedRoute adminOnly><UserManagement /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute adminOnly><Settings /></ProtectedRoute>} />

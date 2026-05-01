@@ -32,7 +32,7 @@ class SalesService {
         await trx('stock_movements').insert({ item_id: item.id, user_id: userId, movement_type: 'sale', quantity: -saleItem.quantity, stock_before: item.stock_quantity, stock_after: newStock, notes: 'Sale' });
       }
 
-      const [sale] = await trx('sales').insert({ user_id: userId, total_amount: totalAmount, total_profit: totalProfit, payment_method: payment_method || 'cash', receipt_number: generateReceiptNumber(), customer_name: customer_name || null, notes: notes || null }).returning('*');
+      const [sale] = await trx('sales').insert({ user_id: userId, total_amount: totalAmount, total_profit: totalProfit, payment_method: payment_method || 'cash', receipt_number: generateReceiptNumber(), customer_name: customer_name || null, notes: notes || null, status: saleData.status || 'completed' }).returning('*');
 
       await trx('sale_items').insert(saleItems.map(si => ({ ...si, sale_id: sale.id })));
       return { ...sale, items: saleItems };
@@ -49,6 +49,7 @@ class SalesService {
       q = q.where(function() { this.where('sales.receipt_number', 'ilike', `%${query.search}%`).orWhere('sales.customer_name', 'ilike', `%${query.search}%`); });
     }
     if (query.payment_method) q = q.where('sales.payment_method', query.payment_method);
+    if (query.status) q = q.where('sales.status', query.status);
 
     q = q.orderBy('sales.created_at', 'desc');
     const countQuery = q.clone().clearSelect().clearOrder().count('sales.id as total').first();
@@ -67,6 +68,16 @@ class SalesService {
   async getReceipt(id) {
     const sale = await this.getById(id);
     return { ...sale, pharmacy: require('../config/env').PHARMACY };
+  }
+
+  async completeSale(id, payment_method) {
+    const [sale] = await db('sales').where('id', id).update({
+      status: 'completed',
+      payment_method: payment_method || 'cash',
+      updated_at: new Date()
+    }).returning('*');
+    if (!sale) throw Object.assign(new Error('Sale not found'), { type: 'not_found' });
+    return sale;
   }
 }
 

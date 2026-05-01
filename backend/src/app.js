@@ -14,6 +14,8 @@ const salesRoutes = require('./routes/sales.routes');
 const analyticsRoutes = require('./routes/analytics.routes');
 const usersRoutes = require('./routes/users.routes');
 const categoriesRoutes = require('./routes/categories.routes');
+const procurementRoutes = require('./routes/procurement.routes');
+const stockTakesRoutes = require('./routes/stockTakes.routes');
 
 const app = express();
 
@@ -85,6 +87,8 @@ app.use('/api/sales', salesRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/categories', categoriesRoutes);
+app.use('/api/procurement', procurementRoutes);
+app.use('/api/stock-takes', stockTakesRoutes);
 
 // 404 handler for API routes
 app.use('/api/*', (req, res) => {

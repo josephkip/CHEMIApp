@@ -7,7 +7,7 @@ import { generateReceiptPDF } from '../utils/PDFService';
 const fmt = (v) => `KES ${Number(v||0).toLocaleString()}`;
 
 export default function NewSale() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const notify = useNotification();
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
@@ -49,13 +49,27 @@ export default function NewSale() {
   const handleCheckout = async () => {
     if (cart.length === 0) return notify.warning('Cart is empty');
     setLoading(true);
+    
+    const canReceivePayments = user?.role === 'admin' || user?.permissions?.can_receive_payments;
+    const status = canReceivePayments ? 'completed' : 'pending';
+
     try {
-      const payload = { items: cart.map(c => ({ item_id: c.item_id, quantity: c.quantity, selling_price: c.selling_price })),
-        payment_method: payment, customer_name: customer || null };
+      const payload = { 
+        items: cart.map(c => ({ item_id: c.item_id, quantity: c.quantity, selling_price: c.selling_price })),
+        payment_method: payment, 
+        customer_name: customer || null,
+        status
+      };
       const { data } = await api.post('/sales', payload);
-      setReceipt(data);
-      setCart([]);
-      notify.success('Sale completed!');
+      
+      if (status === 'completed') {
+        setReceipt(data);
+        notify.success('Sale completed!');
+      } else {
+        notify.success('Sale sent to Cashier!');
+        setCart([]);
+      }
+      
       // Refresh items
       api.get('/items?limit=100').then(r => setItems(r.data.data || []));
     } catch (err) { notify.error(err.response?.data?.error || 'Sale failed'); }
@@ -130,7 +144,7 @@ export default function NewSale() {
             </div>
             <input className="form-input mb-2" placeholder="Customer name (optional)" value={customer} onChange={e=>setCustomer(e.target.value)} />
             <button className="btn btn-primary btn-lg" style={{width:'100%'}} onClick={handleCheckout} disabled={loading || cart.length===0}>
-              {loading ? 'Processing...' : `Checkout ${fmt(cartTotal)}`}
+              {loading ? 'Processing...' : (user?.role === 'admin' || user?.permissions?.can_receive_payments ? `Checkout ${fmt(cartTotal)}` : `Send to Cashier ${fmt(cartTotal)}`)}
             </button>
           </div>
         </div>

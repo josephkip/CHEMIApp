@@ -10,6 +10,8 @@ const navItems = [
   { section: 'Inventory', items: [
     { path: '/inventory', icon: '📦', label: 'Inventory' },
     { path: '/inventory/add', icon: '➕', label: 'Add Item', adminOnly: true },
+    { path: '/procurement', icon: '🚚', label: 'Procurement' },
+    { path: '/stock-take', icon: '📋', label: 'Stock Take' },
   ]},
   { section: 'Reports', items: [
     { path: '/analytics', icon: '📈', label: 'Analytics', adminOnly: true },

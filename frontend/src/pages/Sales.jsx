@@ -14,7 +14,11 @@ export default function Sales() {
   const [search, setSearch] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [detail, setDetail] = useState(null);
+  const [completing, setCompleting] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const { user } = useAuth();
 
   const fetchSales = () => {
     setLoading(true);
@@ -22,15 +26,32 @@ export default function Sales() {
     if (search) p.set('search', search);
     if (startDate) p.set('start_date', startDate);
     if (endDate) p.set('end_date', endDate);
+    if (statusFilter) p.set('status', statusFilter);
     api.get(`/sales?${p}`).then(r => { setSales(r.data.data||[]); setPagination(r.data.pagination||{}); })
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchSales(); }, [page]);
+  useEffect(() => { fetchSales(); }, [page, statusFilter]);
 
   const viewDetail = async (id) => {
     const { data } = await api.get(`/sales/${id}`);
     setDetail(data);
+    setPaymentMethod(data.payment_method || 'cash');
+  };
+
+  const completeSale = async () => {
+    if (!detail) return;
+    setCompleting(true);
+    try {
+      await api.put(`/sales/${detail.id}/complete`, { payment_method: paymentMethod });
+      // update list
+      fetchSales();
+      setDetail(null);
+    } catch(err) {
+      alert('Failed to complete sale');
+    } finally {
+      setCompleting(false);
+    }
   };
 
   return (
@@ -41,21 +62,27 @@ export default function Sales() {
         <input className="form-input" placeholder="Search receipt #..." value={search} onChange={e=>setSearch(e.target.value)} style={{maxWidth:220}} />
         <input className="form-input" type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} style={{width:160}} />
         <input className="form-input" type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} style={{width:160}} />
+        <select className="form-input form-select" value={statusFilter} onChange={e=>{setStatusFilter(e.target.value); setPage(1);}} style={{width:150}}>
+          <option value="">All Statuses</option>
+          <option value="completed">Completed</option>
+          <option value="pending">Pending</option>
+        </select>
         <button className="btn btn-primary btn-sm" onClick={()=>{setPage(1);fetchSales();}}>Filter</button>
-        <button className="btn btn-ghost btn-sm" onClick={()=>{setSearch('');setStartDate('');setEndDate('');setPage(1);setTimeout(fetchSales,0);}}>Clear</button>
+        <button className="btn btn-ghost btn-sm" onClick={()=>{setSearch('');setStartDate('');setEndDate('');setStatusFilter('');setPage(1);setTimeout(fetchSales,0);}}>Clear</button>
       </div>
 
       {loading ? <div className="loader"><div className="spinner"></div></div> : (
         <div className="table-container card" style={{padding:0}}>
           <table className="table">
-            <thead><tr><th>Receipt</th><th>Amount</th>{isAdmin && <th>Profit</th>}<th>Payment</th><th>Cashier</th><th>Date</th><th></th></tr></thead>
+            <thead><tr><th>Receipt</th><th>Amount</th>{isAdmin && <th>Profit</th>}<th>Status</th><th>Payment</th><th>Cashier</th><th>Date</th><th></th></tr></thead>
             <tbody>
-              {sales.length===0 ? <tr><td colSpan={7} className="text-center" style={{padding:40,color:'var(--text-muted)'}}>No sales found</td></tr> :
+              {sales.length===0 ? <tr><td colSpan={8} className="text-center" style={{padding:40,color:'var(--text-muted)'}}>No sales found</td></tr> :
               sales.map(s => (
                 <tr key={s.id}>
                   <td><span className="font-mono" style={{fontSize:'.8rem'}}>{s.receipt_number}</span></td>
                   <td><strong>{fmt(s.total_amount)}</strong></td>
                   {isAdmin && <td className="text-success">{fmt(s.total_profit)}</td>}
+                  <td><span className={`badge badge-${s.status === 'pending' ? 'warning' : 'success'}`}>{s.status}</span></td>
                   <td><span className="badge badge-primary">{s.payment_method}</span></td>
                   <td>{s.cashier_name||'—'}</td>
                   <td style={{fontSize:'.8rem',color:'var(--text-muted)'}}>{new Date(s.created_at).toLocaleString()}</td>
@@ -101,7 +128,23 @@ export default function Sales() {
             </div>
             <div className="flex-between mt-2 font-bold" style={{fontSize:'1.1rem'}}><span>Total:</span><span>{fmt(detail.total_amount)}</span></div>
             {isAdmin && <div className="flex-between text-success" style={{fontSize:'.9rem'}}><span>Profit:</span><span>{fmt(detail.total_profit)}</span></div>}
-            <button className="btn btn-primary mt-2" style={{width:'100%'}} onClick={()=>generateReceiptPDF(detail)}>📄 Download PDF Receipt</button>
+            
+            {detail.status === 'pending' && (user?.role === 'admin' || user?.permissions?.can_receive_payments) ? (
+              <div style={{marginTop: 15, padding: 15, background: 'var(--surface-color)', borderRadius: 8}}>
+                <h4 style={{marginBottom: 10}}>Receive Payment</h4>
+                <div className="form-group">
+                  <select className="form-input form-select" value={paymentMethod} onChange={e=>setPaymentMethod(e.target.value)}>
+                    <option value="cash">💵 Cash</option><option value="mpesa">📱 M-Pesa</option>
+                    <option value="card">💳 Card</option><option value="insurance">🏥 Insurance</option>
+                  </select>
+                </div>
+                <button className="btn btn-success" style={{width:'100%'}} onClick={completeSale} disabled={completing}>
+                  {completing ? 'Processing...' : `Mark as Paid (${fmt(detail.total_amount)})`}
+                </button>
+              </div>
+            ) : (
+              <button className="btn btn-primary mt-2" style={{width:'100%'}} onClick={()=>generateReceiptPDF(detail)}>📄 Download PDF Receipt</button>
+            )}
           </div>
         </div>
       )}

@@ -9,15 +9,18 @@ export default function AddItem() {
   const notify = useNotification();
   const isEdit = Boolean(id);
   const [categories, setCategories] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name:'', category_id:'', buying_price:'', selling_price:'',
     stock_quantity:'', reorder_level:'10', expiry_date:'',
-    batch_number:'', supplier:'', unit:'pcs', description:''
+    batch_number:'', supplier_id:'', unit:'pcs', description:'',
+    profit_margin: ''
   });
 
   useEffect(() => {
     api.get('/categories').then(r => setCategories(r.data)).catch(()=>{});
+    api.get('/procurement/suppliers').then(r => setSuppliers(r.data)).catch(()=>{});
     if (isEdit) {
       api.get(`/items/${id}`).then(r => {
         const d = r.data;
@@ -25,7 +28,8 @@ export default function AddItem() {
           name:d.name, category_id:d.category_id||'', buying_price:d.buying_price,
           selling_price:d.selling_price, stock_quantity:d.stock_quantity,
           reorder_level:d.reorder_level, expiry_date:d.expiry_date?d.expiry_date.split('T')[0]:'',
-          batch_number:d.batch_number||'', supplier:d.supplier||'', unit:d.unit||'pcs', description:d.description||''
+          batch_number:d.batch_number||'', supplier_id:d.supplier_id||'', unit:d.unit||'pcs', description:d.description||'',
+          profit_margin: d.profit_margin || ''
         });
       });
     }
@@ -33,13 +37,27 @@ export default function AddItem() {
 
   const set = (k,v) => setForm(f=>({...f,[k]:v}));
 
+  // Auto-calculate selling price when buying price or profit margin changes
+  useEffect(() => {
+    if (form.buying_price && form.profit_margin) {
+      const bp = parseFloat(form.buying_price);
+      const pm = parseFloat(form.profit_margin);
+      if (!isNaN(bp) && !isNaN(pm)) {
+        set('selling_price', (bp * (1 + pm / 100)).toFixed(2));
+      }
+    }
+  }, [form.buying_price, form.profit_margin]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const payload = {...form, buying_price:parseFloat(form.buying_price), selling_price:parseFloat(form.selling_price),
         stock_quantity:parseInt(form.stock_quantity)||0, reorder_level:parseInt(form.reorder_level)||10,
-        category_id:form.category_id?parseInt(form.category_id):null, expiry_date:form.expiry_date||null};
+        profit_margin: parseFloat(form.profit_margin)||0,
+        category_id:form.category_id?parseInt(form.category_id):null, 
+        supplier_id:form.supplier_id?parseInt(form.supplier_id):null, 
+        expiry_date:form.expiry_date||null};
       if (isEdit) { await api.put(`/items/${id}`, payload); notify.success('Item updated'); }
       else { await api.post('/items', payload); notify.success('Item added'); }
       navigate('/inventory');
@@ -77,6 +95,10 @@ export default function AddItem() {
               <input className="form-input" type="number" min="0" step="0.01" value={form.buying_price} onChange={e=>set('buying_price',e.target.value)} required />
             </div>
             <div className="form-group">
+              <label className="form-label">Profit Margin (%)</label>
+              <input className="form-input" type="number" min="0" step="0.01" value={form.profit_margin} onChange={e=>set('profit_margin',e.target.value)} placeholder="e.g. 20" />
+            </div>
+            <div className="form-group">
               <label className="form-label">Selling Price (KES) *</label>
               <input className="form-input" type="number" min="0" step="0.01" value={form.selling_price} onChange={e=>set('selling_price',e.target.value)} required />
             </div>
@@ -103,7 +125,10 @@ export default function AddItem() {
           </div>
           <div className="form-group">
             <label className="form-label">Supplier</label>
-            <input className="form-input" value={form.supplier} onChange={e=>set('supplier',e.target.value)} placeholder="Supplier name" />
+            <select className="form-input form-select" value={form.supplier_id} onChange={e=>set('supplier_id',e.target.value)}>
+              <option value="">Select supplier</option>
+              {suppliers.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
           </div>
           <div className="form-group">
             <label className="form-label">Description</label>

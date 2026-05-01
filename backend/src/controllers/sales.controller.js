@@ -15,3 +15,7 @@ exports.getById = async (req, res, next) => {
 exports.getReceipt = async (req, res, next) => {
   try { res.json(await salesService.getReceipt(req.params.id)); } catch (err) { next(err); }
 };
+
+exports.completeSale = async (req, res, next) => {
+  try { res.json(await salesService.completeSale(req.params.id, req.body.payment_method)); } catch (err) { next(err); }
+};
