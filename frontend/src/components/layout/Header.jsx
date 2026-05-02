@@ -2,8 +2,14 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function Header({ collapsed, onMenuToggle }) {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin, isSuperAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
+
+  const getRoleLabel = () => {
+    if (isSuperAdmin) return 'Super Administrator';
+    if (isAdmin) return 'Administrator';
+    return 'Sales Attendant';
+  };
 
   return (
     <header className={`header${collapsed ? ' collapsed' : ''}`}>
@@ -11,7 +17,7 @@ export default function Header({ collapsed, onMenuToggle }) {
         <button className="btn-icon" onClick={onMenuToggle} aria-label="Toggle menu">☰</button>
         <div>
           <div className="header-title">Welcome back, {user?.full_name?.split(' ')[0]} 👋</div>
-          <div className="header-subtitle">{user?.role === 'admin' ? 'Administrator' : 'Sales Attendant'}</div>
+          <div className="header-subtitle">{getRoleLabel()}</div>
         </div>
       </div>
       <div className="header-right">

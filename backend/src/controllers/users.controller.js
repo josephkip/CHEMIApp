@@ -41,3 +41,15 @@ exports.resetPassword = async (req, res, next) => {
     res.json({ message: 'Password reset to default (User@123)' });
   } catch (err) { next(err); }
 };
+
+exports.deleteUser = async (req, res, next) => {
+  try {
+    const user = await db('users').where('id', req.params.id).first();
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (user.role === 'super_admin') {
+      return res.status(403).json({ error: 'Cannot delete a Super Admin account' });
+    }
+    await db('users').where('id', req.params.id).del();
+    res.json({ message: 'User removed successfully' });
+  } catch (err) { next(err); }
+};

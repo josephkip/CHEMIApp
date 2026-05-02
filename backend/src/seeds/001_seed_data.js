@@ -10,31 +10,17 @@ exports.seed = async function(knex) {
   await knex('categories').del();
   await knex('users').del();
 
-  // Create admin user (password: Admin@123)
+  // Create super admin user (username: admin, password: Admin@123)
   const adminId = uuidv4();
   const passwordHash = await bcrypt.hash('Admin@123', 12);
 
   await knex('users').insert({
     id: adminId,
     username: 'admin',
-    email: 'admin@chemiapp.com',
+    email: 'admin@moreranchemist.com',
     full_name: 'System Administrator',
     password_hash: passwordHash,
-    role: 'admin',
-    is_active: true
-  });
-
-  // Create sales attendant (password: User@123)
-  const userId = uuidv4();
-  const userPasswordHash = await bcrypt.hash('User@123', 12);
-
-  await knex('users').insert({
-    id: userId,
-    username: 'cashier1',
-    email: 'cashier@chemiapp.com',
-    full_name: 'Jane Wanjiku',
-    password_hash: userPasswordHash,
-    role: 'sales_attendant',
+    role: 'super_admin',
     is_active: true
   });
 

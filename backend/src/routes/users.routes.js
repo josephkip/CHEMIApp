@@ -10,5 +10,6 @@ router.get('/', users.getAll);
 router.put('/:id', users.update);
 router.put('/:id/toggle-active', users.toggleActive);
 router.put('/:id/reset-password', users.resetPassword);
+router.delete('/:id', users.deleteUser);
 
 module.exports = router;

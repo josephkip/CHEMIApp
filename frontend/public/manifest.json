@@ -1,7 +1,7 @@
 {
-  "name": "CHEMIApp",
-  "short_name": "CHEMIApp",
-  "description": "Pharmacy Management System - Manage sales, inventory, and analytics",
+  "name": "MORERAN CHEMIST",
+  "short_name": "MORERAN CHEMIST",
+  "description": "MORERAN CHEMIST - Pharmacy Management System - Manage sales, inventory, and analytics",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",

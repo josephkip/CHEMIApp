@@ -1,6 +1,6 @@
 {
   "name": "chemiapp-desktop",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "CHEMIApp - Pharmacy Management Desktop App",
   "main": "main.js",
   "author": "CHEMIApp",
@@ -8,7 +8,9 @@
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "dist:portable": "electron-builder --win portable",
+    "dist:nsis": "electron-builder --win nsis"
   },
   "build": {
     "appId": "com.chemiapp.pharmacy",
@@ -22,40 +24,33 @@
       {
         "from": "../frontend/dist",
         "to": "frontend",
-        "filter": [
-          "**/*"
-        ]
+        "filter": ["**/*"]
       }
     ],
     "extraResources": [],
     "win": {
       "target": [
         {
+          "target": "portable",
+          "arch": ["x64"]
+        },
+        {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         }
       ],
       "icon": "frontend/icons/icon-512.png"
+    },
+    "portable": {
+      "artifactName": "CHEMIApp-${version}-Portable.exe"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "artifactName": "CHEMIApp-${version}-Setup.exe"
-    },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "josephkip",
-        "repo": "CHEMIApp"
-      }
-    ]
+    }
   },
-  "dependencies": {
-    "electron-is-dev": "^2.0.0",
-    "electron-updater": "^6.8.3"
-  },
+  "dependencies": {},
   "devDependencies": {
     "electron": "^33.0.0",
     "electron-builder": "^25.0.0"

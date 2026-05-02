@@ -43,6 +43,15 @@ export default function UserManagement() {
     } catch (err) { notify.error('Failed to reset password'); }
   };
 
+  const deleteUser = async (id, name) => {
+    if (!confirm(`Are you sure you want to permanently remove "${name}"? This action cannot be undone.`)) return;
+    try {
+      await api.delete(`/users/${id}`);
+      notify.success('User removed successfully');
+      fetchUsers();
+    } catch (err) { notify.error(err.response?.data?.error || 'Failed to remove user'); }
+  };
+
   if (loading) return <div className="loader"><div className="spinner"></div></div>;
 
   return (
@@ -68,6 +77,9 @@ export default function UserManagement() {
                   <div className="flex-gap">
                     <button className={`btn btn-sm ${u.is_active?'btn-danger':'btn-success'}`} onClick={()=>toggleActive(u.id)}>{u.is_active?'Disable':'Enable'}</button>
                     <button className="btn btn-sm btn-secondary" onClick={()=>resetPassword(u.id, u.full_name)}>Reset PW</button>
+                    {u.role !== 'super_admin' && (
+                      <button className="btn btn-sm btn-danger" onClick={()=>deleteUser(u.id, u.full_name)} title="Permanently remove this user">Remove</button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -92,7 +104,6 @@ export default function UserManagement() {
                   <select className="form-input form-select" value={form.role} onChange={e=>setForm({...form,role:e.target.value})}>
                     <option value="sales_attendant">Sales Attendant</option>
                     <option value="admin">Admin</option>
-                    <option value="super_admin">Super Admin</option>
                   </select>
                 </div>
               </div>

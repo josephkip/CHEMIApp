@@ -112,7 +112,7 @@ export default function Settings() {
 
         <div className="card">
           <h3 style={{fontSize:'1.1rem',fontWeight:700,marginBottom:16}}>🏥 Pharmacy Info</h3>
-          <p style={{fontSize:'.9rem',color:'var(--text-secondary)'}}><strong>Name:</strong> CHEMIApp Pharmacy</p>
+          <p style={{fontSize:'.9rem',color:'var(--text-secondary)'}}><strong>Name:</strong> MORERAN CHEMIST</p>
           <p style={{fontSize:'.9rem',color:'var(--text-secondary)'}}><strong>Currency:</strong> KES (Kenyan Shilling)</p>
           <p style={{fontSize:'.9rem',color:'var(--text-secondary)'}}><strong>Version:</strong> 1.0.0</p>
         </div>

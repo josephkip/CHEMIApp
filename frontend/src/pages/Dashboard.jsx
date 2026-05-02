@@ -42,11 +42,13 @@ export default function Dashboard() {
 
       {/* KPI Cards */}
       <div className="kpi-grid">
-        <div className="kpi-card kpi-1">
-          <div className="kpi-icon">💰</div>
-          <div className="kpi-value">{fmt(summary?.today?.revenue)}</div>
-          <div className="kpi-label">Today's Revenue</div>
-        </div>
+        {isAdmin && (
+          <div className="kpi-card kpi-1">
+            <div className="kpi-icon">💰</div>
+            <div className="kpi-value">{fmt(summary?.today?.revenue)}</div>
+            <div className="kpi-label">Today's Revenue</div>
+          </div>
+        )}
         {isAdmin && (
           <div className="kpi-card kpi-2">
             <div className="kpi-icon">📈</div>
@@ -54,11 +56,13 @@ export default function Dashboard() {
             <div className="kpi-label">Today's Profit</div>
           </div>
         )}
-        <div className="kpi-card kpi-3">
-          <div className="kpi-icon">🛒</div>
-          <div className="kpi-value">{summary?.today?.sales || 0}</div>
-          <div className="kpi-label">Today's Sales</div>
-        </div>
+        {isAdmin && (
+          <div className="kpi-card kpi-3">
+            <div className="kpi-icon">🛒</div>
+            <div className="kpi-value">{summary?.today?.sales || 0}</div>
+            <div className="kpi-label">Today's Sales</div>
+          </div>
+        )}
         <div className="kpi-card kpi-4">
           <div className="kpi-icon">⚠️</div>
           <div className="kpi-value">{summary?.inventory?.low_stock || lowStock.length}</div>

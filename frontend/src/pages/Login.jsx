@@ -28,7 +28,7 @@ export default function Login() {
       <div className="login-card">
         <div className="login-logo">
           <div className="login-logo-icon">💊</div>
-          <h1>CHEMIApp</h1>
+          <h1>MORERAN CHEMIST</h1>
           <p>Pharmacy Management System</p>
         </div>
         {error && <div className="login-error">{error}</div>}

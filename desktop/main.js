@@ -1,26 +1,74 @@
-const { app, BrowserWindow, Menu, protocol, net, dialog } = require('electron');
+// ═══════════════════════════════════════════════════════════════════
+// CHEMIApp Desktop — Thin Client (connects to Vercel backend)
+// No local server, no ports, no pipes. Pure HTTPS to cloud.
+// ═══════════════════════════════════════════════════════════════════
+
+const { app, BrowserWindow, Menu, dialog, protocol, net, shell } = require('electron');
 const path = require('path');
 const { pathToFileURL } = require('url');
 const fs = require('fs');
-const { autoUpdater } = require('electron-updater');
+const https = require('https');
+
+// ── Prevent EPIPE crashes (no console in packaged Windows GUI apps) ──
+process.stdout?.on('error', () => {});
+process.stderr?.on('error', () => {});
 
 let mainWindow;
-
 const isDev = !app.isPackaged;
 
+// ── Configuration ──
+const API_BASE_URL = 'https://chemi-app-cvjv.vercel.app';
+const HEALTH_ENDPOINT = `${API_BASE_URL}/api/health`;
+const LOG_DIR = app.isPackaged ? app.getPath('userData') : __dirname;
+
+// ── Logging ──
+function log(msg) {
+  const timestamp = new Date().toISOString();
+  const line = `[${timestamp}] ${msg}\n`;
+  try {
+    fs.appendFileSync(path.join(LOG_DIR, 'chemiapp.log'), line);
+  } catch (_) { /* ignore */ }
+  try { console.log(msg); } catch (_) { /* ignore EPIPE */ }
+}
+
+// ── Health check — verify Vercel API is reachable ──
+function checkApiHealth() {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(false), 10000);
+    
+    https.get(HEALTH_ENDPOINT, (res) => {
+      clearTimeout(timer);
+      let data = '';
+      res.on('data', (chunk) => data += chunk);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          resolve(json.status === 'ok');
+        } catch (_) {
+          resolve(false);
+        }
+      });
+    }).on('error', () => {
+      clearTimeout(timer);
+      resolve(false);
+    });
+  });
+}
+
+// ── Create the main application window ──
 function createWindow() {
-  // Register custom protocol for the UI
+  // Register app:// protocol to serve the embedded frontend
   protocol.handle('app', (request) => {
     let urlPath = new URL(request.url).pathname;
     if (urlPath === '/' || !urlPath) urlPath = '/index.html';
-    
-    let baseDir = isDev 
+
+    const baseDir = isDev
       ? path.join(__dirname, '..', 'frontend', 'dist')
       : path.join(__dirname, 'frontend');
-    
+
     let filePath = path.join(baseDir, urlPath);
     if (!fs.existsSync(filePath)) {
-      // SPA fallback
+      // SPA fallback — serve index.html for client-side routes
       filePath = path.join(baseDir, 'index.html');
     }
     return net.fetch(pathToFileURL(filePath).toString());
@@ -36,66 +84,47 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      // Allow the renderer to make HTTPS requests to Vercel
+      webSecurity: true
     },
     autoHideMenuBar: true,
     backgroundColor: '#0f172a',
-    show: false // Don't show until ready
+    show: false
   });
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
-    if (!isDev) {
-      // Check for updates shortly after app starts
-      setTimeout(() => {
-        autoUpdater.checkForUpdatesAndNotify();
-      }, 3000);
-    }
+    log('Window shown');
   });
 
-  if (isDev && fs.existsSync(path.join(__dirname, '..', 'frontend', 'dist'))) {
-     mainWindow.loadURL('app://-/');
-     mainWindow.webContents.openDevTools();
+  // Load the embedded frontend
+  if (isDev && fs.existsSync(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'))) {
+    mainWindow.loadURL('app://-/');
+    mainWindow.webContents.openDevTools();
   } else if (isDev) {
-     // fallback to Vite server if dev hasn't built
-     mainWindow.loadURL('http://localhost:5173');
-     mainWindow.webContents.openDevTools();
+    // Fallback to Vite dev server if dist not built yet
+    mainWindow.loadURL('http://localhost:5173');
+    mainWindow.webContents.openDevTools();
   } else {
-     mainWindow.loadURL('app://-/');
+    mainWindow.loadURL('app://-/');
   }
+
+  // Open external links in the default browser
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('http')) shell.openExternal(url);
+    return { action: 'deny' };
+  });
 
   mainWindow.on('closed', () => { mainWindow = null; });
 }
 
-// Auto-Updater Events
-autoUpdater.on('update-available', () => {
-  dialog.showMessageBox({
-    type: 'info',
-    title: 'Update Available',
-    message: 'A new version of CHEMIApp is available. Downloading now...'
-  });
-});
-
-autoUpdater.on('update-downloaded', () => {
-  dialog.showMessageBox({
-    type: 'info',
-    title: 'Update Ready',
-    message: 'The update has been downloaded. Restart the application to apply the updates.',
-    buttons: ['Restart', 'Later']
-  }).then((result) => {
-    if (result.response === 0) {
-      autoUpdater.quitAndInstall();
-    }
-  });
-});
-
+// ── Application Menu ──
 const menuTemplate = [
   {
     label: 'CHEMIApp',
     submenu: [
-      { label: 'Dashboard', click: () => mainWindow?.loadURL(`app://-/`) },
-      { type: 'separator' },
-      { label: 'Check for Updates', click: () => autoUpdater.checkForUpdatesAndNotify() },
+      { label: 'Dashboard', click: () => mainWindow?.loadURL('app://-/') },
       { type: 'separator' },
       { role: 'reload' },
       { role: 'forceReload' },
@@ -115,12 +144,53 @@ const menuTemplate = [
   }
 ];
 
-// Register protocol schema before ready
+// ── Register app:// as a privileged scheme BEFORE app.ready ──
 protocol.registerSchemesAsPrivileged([
-  { scheme: 'app', privileges: { secure: true, standard: true, supportFetchAPI: true } }
+  {
+    scheme: 'app',
+    privileges: {
+      secure: true,
+      standard: true,
+      supportFetchAPI: true,
+      corsEnabled: true
+    }
+  }
 ]);
 
+// ── App lifecycle ──
 app.whenReady().then(async () => {
+  log('App starting...');
+
+  // Pre-flight: verify cloud API is reachable
+  const apiOk = await checkApiHealth();
+  if (apiOk) {
+    log('API health check passed — Vercel backend is reachable');
+  } else {
+    log('API health check FAILED — Vercel backend unreachable');
+    const result = await dialog.showMessageBox({
+      type: 'warning',
+      title: 'Connection Issue',
+      message: 'Cannot reach the CHEMIApp server.\n\nPlease check your internet connection and try again.',
+      buttons: ['Retry', 'Launch Anyway', 'Quit'],
+      defaultId: 0,
+      cancelId: 2
+    });
+
+    if (result.response === 0) {
+      // Retry
+      const retryOk = await checkApiHealth();
+      if (!retryOk) {
+        log('Retry also failed');
+      } else {
+        log('Retry succeeded');
+      }
+    } else if (result.response === 2) {
+      app.quit();
+      return;
+    }
+    // "Launch Anyway" falls through
+  }
+
   Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate));
   createWindow();
 });
@@ -131,4 +201,13 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   if (!mainWindow) createWindow();
+});
+
+// ── Catch unhandled errors globally ──
+process.on('uncaughtException', (err) => {
+  log(`UNCAUGHT EXCEPTION: ${err.message}\n${err.stack}`);
+});
+
+process.on('unhandledRejection', (reason) => {
+  log(`UNHANDLED REJECTION: ${reason}`);
 });

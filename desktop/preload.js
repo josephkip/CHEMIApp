@@ -1,7 +1,6 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   platform: process.platform,
-  isDesktop: true,
-  invoke: (channel, data) => ipcRenderer.invoke(channel, data)
+  isDesktop: true
 });
