@@ -17,7 +17,7 @@ let mainWindow;
 const isDev = !app.isPackaged;
 
 // ── Configuration ──
-const API_BASE_URL = 'https://chemi-app-cvjv.vercel.app';
+const API_BASE_URL = 'https://moreranchemist.vercel.app';
 const HEALTH_ENDPOINT = `${API_BASE_URL}/api/health`;
 const LOG_DIR = app.isPackaged ? app.getPath('userData') : __dirname;
 

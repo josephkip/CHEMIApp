@@ -4,7 +4,7 @@ import axios from 'axios';
 // MORERAN CHEMIST API Client — connects to Vercel backend over HTTPS
 // ═══════════════════════════════════════════════════════════════
 
-const API_BASE_URL = 'https://chemi-app-cvjv.vercel.app/api';
+const API_BASE_URL = 'https://moreranchemist.vercel.app/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
