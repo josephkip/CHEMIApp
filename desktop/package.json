@@ -1,9 +1,9 @@
 {
-  "name": "chemiapp-desktop",
+  "name": "moreran-chemist-desktop",
   "version": "2.0.0",
-  "description": "CHEMIApp - Pharmacy Management Desktop App",
+  "description": "MORERAN CHEMIST - Pharmacy Management Desktop App",
   "main": "main.js",
-  "author": "CHEMIApp",
+  "author": "MORERAN CHEMIST",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
@@ -13,8 +13,8 @@
     "dist:nsis": "electron-builder --win nsis"
   },
   "build": {
-    "appId": "com.chemiapp.pharmacy",
-    "productName": "CHEMIApp",
+    "appId": "com.moreranchemist.pharmacy",
+    "productName": "Moreran Chemist",
     "directories": {
       "output": "../releases"
     },
@@ -42,12 +42,12 @@
       "icon": "frontend/icons/icon-512.png"
     },
     "portable": {
-      "artifactName": "CHEMIApp-${version}-Portable.exe"
+      "artifactName": "MoreranChemist-${version}-Portable.exe"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "CHEMIApp-${version}-Setup.exe"
+      "artifactName": "MoreranChemist-${version}-Setup.exe"
     }
   },
   "dependencies": {},

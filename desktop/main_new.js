@@ -8,7 +8,7 @@ const http = require('http');
 let mainWindow;
 
 const isDev = !app.isPackaged;
-const PIPE_NAME = '\\\\.\\pipe\\chemiapp-api-' + crypto.randomBytes(8).toString('hex');
+const PIPE_NAME = '\\\\.\\pipe\\moreranchemist-api-' + crypto.randomBytes(8).toString('hex');
 
 function findEnvFile() {
   const candidates = isDev
@@ -137,7 +137,7 @@ function createWindow() {
     height: 900,
     minWidth: 900,
     minHeight: 600,
-    title: 'CHEMIApp — Pharmacy Management',
+    title: 'Moreran Chemist — Pharmacy Management',
     icon: path.join(__dirname, 'frontend', 'icons', 'icon-512.png'),
     webPreferences: {
       nodeIntegration: false,
@@ -169,7 +169,7 @@ function createWindow() {
 
 const menuTemplate = [
   {
-    label: 'CHEMIApp',
+    label: 'Moreran Chemist',
     submenu: [
       { label: 'Dashboard', click: () => mainWindow?.loadURL(`app://-/`) },
       { type: 'separator' },
@@ -207,7 +207,7 @@ app.whenReady().then(async () => {
   } catch (err) {
     console.error('Failed to start backend:', err);
     dialog.showErrorBox(
-      'CHEMIApp - Startup Error',
+      'Moreran Chemist - Startup Error',
       `Failed to initialize application core.\n\nError: ${err.message}\n\nPlease check database credentials.`
     );
   }

@@ -129,7 +129,7 @@ export default function Sales() {
             <div className="flex-between mt-2 font-bold" style={{fontSize:'1.1rem'}}><span>Total:</span><span>{fmt(detail.total_amount)}</span></div>
             {isAdmin && <div className="flex-between text-success" style={{fontSize:'.9rem'}}><span>Profit:</span><span>{fmt(detail.total_profit)}</span></div>}
             
-            {detail.status === 'pending' && (user?.role === 'admin' || user?.permissions?.can_receive_payments) ? (
+            {detail.status === 'pending' && (isAdmin || user?.permissions?.can_receive_payments) ? (
               <div style={{marginTop: 15, padding: 15, background: 'var(--surface-color)', borderRadius: 8}}>
                 <h4 style={{marginBottom: 10}}>Receive Payment</h4>
                 <div className="form-group">

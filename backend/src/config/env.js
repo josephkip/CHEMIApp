@@ -33,9 +33,9 @@ module.exports = {
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
   PHARMACY: {
-    name: process.env.PHARMACY_NAME || 'CHEMIApp Pharmacy',
+    name: process.env.PHARMACY_NAME || 'MORERAN CHEMIST',
     phone: process.env.PHARMACY_PHONE || '+254700000000',
-    email: process.env.PHARMACY_EMAIL || 'info@chemiapp.com',
+    email: process.env.PHARMACY_EMAIL || 'info@moreranchemist.com',
     address: process.env.PHARMACY_ADDRESS || 'Nairobi, Kenya',
     license: process.env.PHARMACY_LICENSE || 'PHARM-2024-001',
     currency: process.env.CURRENCY || 'KES'

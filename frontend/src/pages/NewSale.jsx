@@ -50,7 +50,7 @@ export default function NewSale() {
     if (cart.length === 0) return notify.warning('Cart is empty');
     setLoading(true);
     
-    const canReceivePayments = user?.role === 'admin' || user?.permissions?.can_receive_payments;
+    const canReceivePayments = isAdmin || user?.permissions?.can_receive_payments;
     const status = canReceivePayments ? 'completed' : 'pending';
 
     try {
@@ -144,7 +144,7 @@ export default function NewSale() {
             </div>
             <input className="form-input mb-2" placeholder="Customer name (optional)" value={customer} onChange={e=>setCustomer(e.target.value)} />
             <button className="btn btn-primary btn-lg" style={{width:'100%'}} onClick={handleCheckout} disabled={loading || cart.length===0}>
-              {loading ? 'Processing...' : (user?.role === 'admin' || user?.permissions?.can_receive_payments ? `Checkout ${fmt(cartTotal)}` : `Send to Cashier ${fmt(cartTotal)}`)}
+              {loading ? 'Processing...' : (isAdmin || user?.permissions?.can_receive_payments ? `Checkout ${fmt(cartTotal)}` : `Send to Cashier ${fmt(cartTotal)}`)}
             </button>
           </div>
         </div>

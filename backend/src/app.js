@@ -130,7 +130,7 @@ if (config.NODE_ENV === 'production') {
   } else {
     console.warn('⚠ Frontend build not found — only API available');
     app.get('/', (req, res) => {
-      res.json({ message: 'CHEMIApp API is running. Frontend build not found.' });
+      res.json({ message: 'MORERAN CHEMIST API is running. Frontend build not found.' });
     });
   }
 }

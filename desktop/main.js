@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// CHEMIApp Desktop — Thin Client (connects to Vercel backend)
+// MORERAN CHEMIST Desktop — Thin Client (connects to Vercel backend)
 // No local server, no ports, no pipes. Pure HTTPS to cloud.
 // ═══════════════════════════════════════════════════════════════════
 
@@ -26,7 +26,7 @@ function log(msg) {
   const timestamp = new Date().toISOString();
   const line = `[${timestamp}] ${msg}\n`;
   try {
-    fs.appendFileSync(path.join(LOG_DIR, 'chemiapp.log'), line);
+    fs.appendFileSync(path.join(LOG_DIR, 'moreran-chemist.log'), line);
   } catch (_) { /* ignore */ }
   try { console.log(msg); } catch (_) { /* ignore EPIPE */ }
 }
@@ -79,7 +79,7 @@ function createWindow() {
     height: 900,
     minWidth: 900,
     minHeight: 600,
-    title: 'CHEMIApp — Pharmacy Management',
+    title: 'Moreran Chemist — Pharmacy Management',
     icon: path.join(__dirname, 'frontend', 'icons', 'icon-512.png'),
     webPreferences: {
       nodeIntegration: false,
@@ -122,7 +122,7 @@ function createWindow() {
 // ── Application Menu ──
 const menuTemplate = [
   {
-    label: 'CHEMIApp',
+    label: 'Moreran Chemist',
     submenu: [
       { label: 'Dashboard', click: () => mainWindow?.loadURL('app://-/') },
       { type: 'separator' },
@@ -170,7 +170,7 @@ app.whenReady().then(async () => {
     const result = await dialog.showMessageBox({
       type: 'warning',
       title: 'Connection Issue',
-      message: 'Cannot reach the CHEMIApp server.\n\nPlease check your internet connection and try again.',
+      message: 'Cannot reach the MORERAN CHEMIST server.\n\nPlease check your internet connection and try again.',
       buttons: ['Retry', 'Launch Anyway', 'Quit'],
       defaultId: 0,
       cancelId: 2
