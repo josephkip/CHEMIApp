@@ -82,17 +82,63 @@ export default function NewSale() {
         <h1 className="page-title">Sale Complete ✓</h1>
         <button className="btn btn-primary" onClick={()=>setReceipt(null)}>New Sale</button>
       </div>
-      <div className="card" style={{maxWidth:300,margin:'0 auto',textAlign:'center',padding:'24px 16px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}}>
-        <div style={{fontSize:'2rem',marginBottom:8}}>✨</div>
-        <h3 style={{marginBottom:4, fontSize: '1.2rem'}}>Sale Complete</h3>
-        <p style={{color:'var(--text-muted)',marginBottom:16, fontSize: '0.85rem'}}>
-          Receipt <strong>#{receipt.receipt_number}</strong>
-        </p>
+      <div className="card" style={{maxWidth:400,margin:'0 auto',padding:'24px 16px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}}>
+        <div style={{
+          background: '#fff', color: '#000', borderRadius: 8, padding: '20px 16px',
+          fontFamily: 'Courier New, monospace', fontSize: '.85rem', lineHeight: 1.6,
+          border: '1px dashed #ccc', margin: '0 auto 20px auto'
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: 12 }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>MORERAN CHEMIST</div>
+            <div style={{ fontSize: '.75rem', color: '#666' }}>Health & Wellness Our Priority</div>
+            <div style={{ fontSize: '.75rem', color: '#666' }}>Nairobi, Kenya | +254 700 000 000</div>
+          </div>
+
+          <div style={{ borderTop: '1px dashed #999', borderBottom: '1px dashed #999', padding: '6px 0', marginBottom: 8 }}>
+            <div><strong>Receipt:</strong> #{receipt.receipt_number}</div>
+            <div><strong>Date:</strong> {new Date(receipt.created_at || new Date()).toLocaleString()}</div>
+            <div><strong>Cashier:</strong> {user?.full_name || user?.username || '—'}</div>
+            {receipt.customer_name && <div><strong>Customer:</strong> {receipt.customer_name}</div>}
+          </div>
+
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.8rem' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #999' }}>
+                <th style={{ textAlign: 'left', padding: '4px 0' }}>Item</th>
+                <th style={{ textAlign: 'center', padding: '4px' }}>Qty</th>
+                <th style={{ textAlign: 'right', padding: '4px 0' }}>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {receipt.items?.map((it, i) => (
+                <tr key={i}>
+                  <td style={{ padding: '4px 0', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.item_name || it.name}</td>
+                  <td style={{ textAlign: 'center', padding: '4px' }}>{it.quantity}</td>
+                  <td style={{ textAlign: 'right', padding: '4px 0' }}>{fmt(it.selling_price * it.quantity)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div style={{ borderTop: '1px dashed #999', marginTop: 12, paddingTop: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '1rem' }}>
+              <span>TOTAL:</span><span>{fmt(receipt.total_amount)}</span>
+            </div>
+            <div style={{ fontSize: '.75rem', color: '#666', marginTop: 4 }}>
+              Payment: {receipt.payment_method?.toUpperCase()}
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: 16, fontSize: '.75rem', color: '#888', fontStyle: 'italic' }}>
+            Thank you for shopping with us!<br />Quick Recovery!
+          </div>
+        </div>
+
         <button className="btn btn-primary" style={{width:'100%', marginBottom: 8}} onClick={()=>generateReceiptPDF(receipt)}>
           🖨 Print PDF Receipt
         </button>
-        <button className="btn btn-ghost btn-sm" style={{width:'100%'}} onClick={()=>setReceipt(null)}>
-          ← New Sale
+        <button className="btn btn-ghost" style={{width:'100%'}} onClick={()=>setReceipt(null)}>
+          ← Back to New Sale
         </button>
       </div>
     </div>
