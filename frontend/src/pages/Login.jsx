@@ -48,7 +48,7 @@ export default function Login() {
           </button>
         </form>
         <p style={{textAlign:'center',marginTop:24,fontSize:'.75rem',color:'#64748b'}}>
-          Default: admin / Admin@123
+          Moreran Chemist &copy; {new Date().getFullYear()}
         </p>
       </div>
     </div>
