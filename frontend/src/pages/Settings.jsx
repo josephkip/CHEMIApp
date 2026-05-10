@@ -82,12 +82,10 @@ export default function Settings() {
               setLoading(false);
             }
           }}>
-            <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" name="full_name" defaultValue={user?.full_name||''} disabled={user?.role !== 'super_admin'} required /></div>
-            <div className="form-group"><label className="form-label">Username</label><input className="form-input" name="username" defaultValue={user?.username||''} disabled={user?.role !== 'super_admin'} required /></div>
-            <div className="form-group"><label className="form-label">Role</label><input className="form-input" value={user?.role||''} disabled /></div>
-            {user?.role === 'super_admin' && (
-              <button className="btn btn-primary" type="submit" disabled={loading}>{loading?'Saving...':'Update Profile'}</button>
-            )}
+            <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" name="full_name" defaultValue={user?.full_name||''} required /></div>
+            <div className="form-group"><label className="form-label">Username</label><input className="form-input" name="username" defaultValue={user?.username||''} required /></div>
+            <div className="form-group"><label className="form-label">Role</label><input className="form-input" value={user?.role?.replace('_',' ')||''} disabled /></div>
+            <button className="btn btn-primary" type="submit" disabled={loading}>{loading?'Saving...':'Update Profile'}</button>
           </form>
         </div>
 

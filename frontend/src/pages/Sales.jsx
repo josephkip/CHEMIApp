@@ -16,6 +16,7 @@ export default function Sales() {
   const [endDate, setEndDate] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [detail, setDetail] = useState(null);
+  const [detailTab, setDetailTab] = useState('details');
   const [completing, setCompleting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const { user } = useAuth();
@@ -36,6 +37,7 @@ export default function Sales() {
   const viewDetail = async (id) => {
     const { data } = await api.get(`/sales/${id}`);
     setDetail(data);
+    setDetailTab('details');
     setPaymentMethod(data.payment_method || 'cash');
   };
 
@@ -44,7 +46,6 @@ export default function Sales() {
     setCompleting(true);
     try {
       await api.put(`/sales/${detail.id}/complete`, { payment_method: paymentMethod });
-      // update list
       fetchSales();
       setDetail(null);
     } catch(err) {
@@ -104,46 +105,117 @@ export default function Sales() {
 
       {detail && (
         <div className="modal-overlay" onClick={()=>setDetail(null)}>
-          <div className="modal" onClick={e=>e.stopPropagation()}>
+          <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth: 500}}>
             <div className="modal-header">
-              <h3 className="modal-title">Sale Details</h3>
+              <h3 className="modal-title">Sale — #{detail.receipt_number}</h3>
               <button className="modal-close" onClick={()=>setDetail(null)}>×</button>
             </div>
-            <div style={{marginBottom:12}}>
-              <p><strong>Receipt:</strong> {detail.receipt_number}</p>
-              <p><strong>Date:</strong> {new Date(detail.created_at).toLocaleString()}</p>
-              <p><strong>Cashier:</strong> {detail.cashier_name}</p>
-              <p><strong>Payment:</strong> {detail.payment_method}</p>
-              {detail.customer_name && <p><strong>Customer:</strong> {detail.customer_name}</p>}
+
+            {/* Tabs: Details | Receipt */}
+            <div style={{ display:'flex', gap:8, marginBottom:16, borderBottom:'1px solid var(--border-color)', paddingBottom:8 }}>
+              <button className={`btn btn-sm ${detailTab==='details'?'btn-primary':'btn-ghost'}`} onClick={()=>setDetailTab('details')}>📋 Details</button>
+              <button className={`btn btn-sm ${detailTab==='receipt'?'btn-primary':'btn-ghost'}`} onClick={()=>setDetailTab('receipt')}>🧾 Receipt</button>
             </div>
-            <div className="table-container">
-              <table className="table">
-                <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
-                <tbody>
-                  {detail.items?.map((it,i) => (
-                    <tr key={i}><td>{it.item_name}</td><td>{it.quantity}</td><td>{fmt(it.selling_price)}</td><td>{fmt(it.selling_price*it.quantity)}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="flex-between mt-2 font-bold" style={{fontSize:'1.1rem'}}><span>Total:</span><span>{fmt(detail.total_amount)}</span></div>
-            {isAdmin && <div className="flex-between text-success" style={{fontSize:'.9rem'}}><span>Profit:</span><span>{fmt(detail.total_profit)}</span></div>}
-            
-            {detail.status === 'pending' && (isAdmin || user?.permissions?.can_receive_payments) ? (
-              <div style={{marginTop: 15, padding: 15, background: 'var(--surface-color)', borderRadius: 8}}>
-                <h4 style={{marginBottom: 10}}>Receive Payment</h4>
-                <div className="form-group">
-                  <select className="form-input form-select" value={paymentMethod} onChange={e=>setPaymentMethod(e.target.value)}>
-                    <option value="cash">💵 Cash</option><option value="mpesa">📱 M-Pesa</option>
-                    <option value="card">💳 Card</option><option value="insurance">🏥 Insurance</option>
-                  </select>
+
+            {detailTab === 'details' && (
+              <>
+                <div style={{marginBottom:12}}>
+                  <p><strong>Date:</strong> {new Date(detail.created_at).toLocaleString()}</p>
+                  <p><strong>Cashier:</strong> {detail.cashier_name}</p>
+                  <p><strong>Payment:</strong> {detail.payment_method}</p>
+                  {detail.customer_name && <p><strong>Customer:</strong> {detail.customer_name}</p>}
                 </div>
-                <button className="btn btn-success" style={{width:'100%'}} onClick={completeSale} disabled={completing}>
-                  {completing ? 'Processing...' : `Mark as Paid (${fmt(detail.total_amount)})`}
+                <div className="table-container">
+                  <table className="table">
+                    <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
+                    <tbody>
+                      {detail.items?.map((it,i) => (
+                        <tr key={i}><td>{it.item_name}</td><td>{it.quantity}</td><td>{fmt(it.selling_price)}</td><td>{fmt(it.selling_price*it.quantity)}</td></tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="flex-between mt-2 font-bold" style={{fontSize:'1.1rem'}}><span>Total:</span><span>{fmt(detail.total_amount)}</span></div>
+                {isAdmin && <div className="flex-between text-success" style={{fontSize:'.9rem'}}><span>Profit:</span><span>{fmt(detail.total_profit)}</span></div>}
+                
+                {detail.status === 'pending' && (isAdmin || user?.permissions?.can_receive_payments) ? (
+                  <div style={{marginTop: 15, padding: 15, background: 'var(--surface-color)', borderRadius: 8}}>
+                    <h4 style={{marginBottom: 10}}>Receive Payment</h4>
+                    <div className="form-group">
+                      <select className="form-input form-select" value={paymentMethod} onChange={e=>setPaymentMethod(e.target.value)}>
+                        <option value="cash">💵 Cash</option><option value="mpesa">📱 M-Pesa</option>
+                        <option value="card">💳 Card</option><option value="insurance">🏥 Insurance</option>
+                      </select>
+                    </div>
+                    <button className="btn btn-success" style={{width:'100%'}} onClick={completeSale} disabled={completing}>
+                      {completing ? 'Processing...' : `Mark as Paid (${fmt(detail.total_amount)})`}
+                    </button>
+                  </div>
+                ) : (
+                  <button className="btn btn-primary mt-2" style={{width:'100%'}} onClick={()=>generateReceiptPDF(detail)}>📄 Download PDF Receipt</button>
+                )}
+              </>
+            )}
+
+            {detailTab === 'receipt' && (
+              <div>
+                {/* Receipt Preview */}
+                <div style={{
+                  background: '#fff', color: '#000', borderRadius: 8, padding: '20px 16px',
+                  fontFamily: 'Courier New, monospace', fontSize: '.8rem', lineHeight: 1.6,
+                  border: '1px dashed #ccc', maxWidth: 320, margin: '0 auto'
+                }}>
+                  <div style={{ textAlign: 'center', marginBottom: 12 }}>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>MORERAN CHEMIST</div>
+                    <div style={{ fontSize: '.7rem', color: '#666' }}>Health & Wellness Our Priority</div>
+                    <div style={{ fontSize: '.7rem', color: '#666' }}>Nairobi, Kenya | +254 700 000 000</div>
+                  </div>
+
+                  <div style={{ borderTop: '1px dashed #999', borderBottom: '1px dashed #999', padding: '6px 0', marginBottom: 8 }}>
+                    <div><strong>Receipt:</strong> #{detail.receipt_number}</div>
+                    <div><strong>Date:</strong> {new Date(detail.created_at).toLocaleString()}</div>
+                    {detail.cashier_name && <div><strong>Cashier:</strong> {detail.cashier_name}</div>}
+                    {detail.customer_name && <div><strong>Customer:</strong> {detail.customer_name}</div>}
+                  </div>
+
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.75rem' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid #999' }}>
+                        <th style={{ textAlign: 'left', padding: '2px 0' }}>Item</th>
+                        <th style={{ textAlign: 'center', padding: '2px 4px' }}>Qty</th>
+                        <th style={{ textAlign: 'right', padding: '2px 0' }}>Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detail.items?.map((it, i) => (
+                        <tr key={i}>
+                          <td style={{ padding: '2px 0', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.item_name}</td>
+                          <td style={{ textAlign: 'center', padding: '2px 4px' }}>{it.quantity}</td>
+                          <td style={{ textAlign: 'right', padding: '2px 0' }}>{fmt(it.selling_price * it.quantity)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  <div style={{ borderTop: '1px dashed #999', marginTop: 8, paddingTop: 8 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '.9rem' }}>
+                      <span>TOTAL:</span><span>{fmt(detail.total_amount)}</span>
+                    </div>
+                    <div style={{ fontSize: '.7rem', color: '#666', marginTop: 4 }}>
+                      Payment: {detail.payment_method?.toUpperCase()}
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: 'center', marginTop: 12, fontSize: '.7rem', color: '#888', fontStyle: 'italic' }}>
+                    Thank you for shopping with us!<br />Quick Recovery!
+                  </div>
+                </div>
+
+                {/* Print Button */}
+                <button className="btn btn-primary mt-2" style={{ width: '100%' }} onClick={() => generateReceiptPDF(detail)}>
+                  🖨️ Print Receipt
                 </button>
               </div>
-            ) : (
-              <button className="btn btn-primary mt-2" style={{width:'100%'}} onClick={()=>generateReceiptPDF(detail)}>📄 Download PDF Receipt</button>
             )}
           </div>
         </div>

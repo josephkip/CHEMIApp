@@ -13,6 +13,7 @@ import UserManagement from './pages/UserManagement';
 import Settings from './pages/Settings';
 import Procurement from './pages/Procurement';
 import StockTake from './pages/StockTake';
+import Categories from './pages/Categories';
 
 export default function App() {
   const { user, loading } = useAuth();
@@ -30,9 +31,10 @@ export default function App() {
         <Route path="/inventory/edit/:id" element={<ProtectedRoute adminOnly><AddItem /></ProtectedRoute>} />
         <Route path="/procurement" element={<Procurement />} />
         <Route path="/stock-take" element={<StockTake />} />
+        <Route path="/categories" element={<ProtectedRoute adminOnly><Categories /></ProtectedRoute>} />
         <Route path="/analytics" element={<ProtectedRoute adminOnly><Analytics /></ProtectedRoute>} />
         <Route path="/users" element={<ProtectedRoute superAdminOnly><UserManagement /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute adminOnly><Settings /></ProtectedRoute>} />
+        <Route path="/settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
     </Routes>

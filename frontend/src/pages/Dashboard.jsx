@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [trend, setTrend] = useState([]);
   const [recent, setRecent] = useState([]);
   const [lowStock, setLowStock] = useState([]);
+  const [expiring, setExpiring] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,11 +21,13 @@ export default function Dashboard() {
       isAdmin ? api.get('/analytics/sales-trend?group_by=day').catch(() => ({data:[]})) : Promise.resolve({data:[]}),
       api.get('/sales?limit=5').catch(() => ({data:{data:[]}})),
       api.get('/items/alerts/low-stock').catch(() => ({data:[]})),
-    ]).then(([s, t, r, l]) => {
+      api.get('/items/alerts/expiring').catch(() => ({data:[]})),
+    ]).then(([s, t, r, l, e]) => {
       setSummary(s.data);
       setTrend(t.data || []);
       setRecent(r.data?.data || []);
       setLowStock(l.data || []);
+      setExpiring(e.data || []);
     }).finally(() => setLoading(false));
   }, [isAdmin]);
 
@@ -67,6 +70,11 @@ export default function Dashboard() {
           <div className="kpi-icon">⚠️</div>
           <div className="kpi-value">{summary?.inventory?.low_stock || lowStock.length}</div>
           <div className="kpi-label">Low Stock Alerts</div>
+        </div>
+        <div className="kpi-card" style={{background:'linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05))', borderLeft:'4px solid var(--danger)'}}>
+          <div className="kpi-icon">⏰</div>
+          <div className="kpi-value">{summary?.inventory?.expiring_soon || expiring.length}</div>
+          <div className="kpi-label">Expiring Soon</div>
         </div>
       </div>
 
@@ -120,6 +128,39 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Expiring Items */}
+      <div className="card mt-3">
+        <div className="flex-between mb-2">
+          <div className="chart-title" style={{marginBottom:0}}>⏰ Expiring Soon</div>
+          <Link to="/inventory" className="btn btn-ghost btn-sm">View Inventory →</Link>
+        </div>
+        {expiring.length === 0 ? (
+          <div className="empty-state"><div className="empty-state-icon">✅</div><div>No items expiring soon</div></div>
+        ) : (
+          <div className="table-container">
+            <table className="table">
+              <thead><tr><th>Item</th><th>Category</th><th>Stock</th><th>Expiry Date</th><th>Days Left</th></tr></thead>
+              <tbody>
+                {expiring.slice(0, 8).map(item => {
+                  const days = Math.ceil((new Date(item.expiry_date) - new Date()) / 86400000);
+                  return (
+                    <tr key={item.id}>
+                      <td className="truncate" style={{maxWidth:180}}><strong>{item.name}</strong></td>
+                      <td><span className="badge badge-info">{item.category_name || '—'}</span></td>
+                      <td>{item.stock_quantity}</td>
+                      <td>{new Date(item.expiry_date).toLocaleDateString()}</td>
+                      <td><span className={`badge ${days <= 7 ? 'badge-danger' : 'badge-warning'}`}>
+                        {days < 0 ? 'EXPIRED' : `${days} days`}
+                      </span></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Recent Sales */}

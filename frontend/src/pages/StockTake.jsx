@@ -101,28 +101,43 @@ export default function StockTake() {
           
           <div className="table-container" style={{ padding: 0 }}>
             <table className="table">
-              <thead><tr><th>Item Name</th><th>Expected Stock</th><th>Actual Count</th>{activeStockTake.status === 'completed' && <th>Variance</th>}</tr></thead>
+              <thead><tr><th>Item Name</th><th>Expected Stock</th><th>Actual Count</th><th>Variance</th></tr></thead>
               <tbody>
-                {activeStockTake.items?.map(it => (
-                  <tr key={it.item_id}>
-                    <td>{it.item_name}</td>
-                    <td>{it.expected_quantity}</td>
-                    <td>
-                      {activeStockTake.status === 'draft' ? (
-                        <input 
-                          type="number" 
-                          className="form-input" 
-                          style={{ width: 100 }} 
-                          value={it.actual_quantity === null ? '' : it.actual_quantity} 
-                          onChange={(e) => updateItemCount(it.item_id, e.target.value)} 
-                        />
-                      ) : (
-                        it.actual_quantity
-                      )}
-                    </td>
-                    {activeStockTake.status === 'completed' && <td>{it.variance}</td>}
-                  </tr>
-                ))}
+                {activeStockTake.items?.map(it => {
+                  const variance = it.actual_quantity !== null && it.actual_quantity !== undefined && it.actual_quantity !== ''
+                    ? it.actual_quantity - it.expected_quantity : null;
+                  return (
+                    <tr key={it.item_id}>
+                      <td>{it.item_name}</td>
+                      <td>{it.expected_quantity}</td>
+                      <td>
+                        {activeStockTake.status === 'draft' ? (
+                          <input 
+                            type="number" 
+                            className="form-input" 
+                            style={{ width: 100 }} 
+                            value={it.actual_quantity === null ? '' : it.actual_quantity} 
+                            onChange={(e) => updateItemCount(it.item_id, e.target.value)} 
+                          />
+                        ) : (
+                          it.actual_quantity
+                        )}
+                      </td>
+                      <td>
+                        {variance !== null ? (
+                          <span style={{
+                            fontWeight: 700,
+                            color: variance < 0 ? 'var(--danger)' : variance > 0 ? 'var(--success)' : 'var(--text-muted)'
+                          }}>
+                            {variance > 0 ? '+' : ''}{variance}
+                          </span>
+                        ) : (
+                          <span style={{color:'var(--text-muted)'}}>—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

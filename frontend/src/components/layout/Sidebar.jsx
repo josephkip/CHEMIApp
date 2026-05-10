@@ -10,15 +10,16 @@ const navItems = [
   { section: 'Inventory', items: [
     { path: '/inventory', icon: '📦', label: 'Inventory' },
     { path: '/inventory/add', icon: '➕', label: 'Add Item', adminOnly: true },
+    { path: '/categories', icon: '🏷️', label: 'Categories', adminOnly: true },
     { path: '/procurement', icon: '🚚', label: 'Procurement' },
     { path: '/stock-take', icon: '📋', label: 'Stock Take' },
   ]},
   { section: 'Reports', items: [
     { path: '/analytics', icon: '📈', label: 'Analytics', adminOnly: true },
   ]},
-  { section: 'Admin', adminOnly: true, items: [
+  { section: 'Admin', items: [
     { path: '/users', icon: '👥', label: 'Users', superAdminOnly: true },
-    { path: '/settings', icon: '⚙️', label: 'Settings', adminOnly: true },
+    { path: '/settings', icon: '⚙️', label: 'Settings' },
   ]},
 ];
 

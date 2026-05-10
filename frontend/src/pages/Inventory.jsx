@@ -19,6 +19,9 @@ export default function Inventory() {
   const [pagination, setPagination] = useState({});
   const [restockModal, setRestockModal] = useState(null);
   const [restockQty, setRestockQty] = useState('');
+  const [detailModal, setDetailModal] = useState(null);
+  const [movements, setMovements] = useState([]);
+  const [movementsLoading, setMovementsLoading] = useState(false);
 
   const fetchItems = () => {
     setLoading(true);
@@ -45,6 +48,25 @@ export default function Inventory() {
       setRestockModal(null); setRestockQty('');
       fetchItems();
     } catch (err) { notify.error(err.response?.data?.error || 'Restock failed'); }
+  };
+
+  const handleDelete = async (item) => {
+    if (!confirm(`Are you sure you want to delete "${item.name}"? This item will be hidden from inventory but historical data is preserved.`)) return;
+    try {
+      await api.delete(`/items/${item.id}`);
+      notify.success(`${item.name} deleted`);
+      fetchItems();
+    } catch (err) { notify.error(err.response?.data?.error || 'Delete failed'); }
+  };
+
+  const viewDetail = async (item) => {
+    setDetailModal(item);
+    setMovementsLoading(true);
+    try {
+      const res = await api.get(`/items/${item.id}/movements?limit=50`);
+      setMovements(res.data.data || []);
+    } catch { setMovements([]); }
+    finally { setMovementsLoading(false); }
   };
 
   const getStockBadge = (item) => {
@@ -89,24 +111,28 @@ export default function Inventory() {
       {loading ? <div className="loader"><div className="spinner"></div></div> : (
         <div className="table-container card" style={{padding:0}}>
           <table className="table">
-            <thead><tr><th>Item Name</th><th>Category</th><th>Buying</th><th>Selling</th><th>Stock</th><th>Status</th><th>Expiry</th>{isAdmin&&<th>Actions</th>}</tr></thead>
+            <thead><tr><th>Item Name</th><th>Category</th><th>Buying</th><th>Selling</th><th>Stock</th><th>Status</th><th>Expiry</th><th>Actions</th></tr></thead>
             <tbody>
-              {items.length === 0 ? <tr><td colSpan={isAdmin?8:7} className="text-center" style={{padding:40,color:'var(--text-muted)'}}>No items found</td></tr> :
+              {items.length === 0 ? <tr><td colSpan={8} className="text-center" style={{padding:40,color:'var(--text-muted)'}}>No items found</td></tr> :
               items.map(item => (
                 <tr key={item.id}>
-                  <td><strong>{item.name}</strong></td>
+                  <td><strong style={{cursor:'pointer',color:'var(--primary)'}} onClick={() => viewDetail(item)}>{item.name}</strong></td>
                   <td><span className="badge badge-info">{item.category_name||'—'}</span></td>
                   <td>{fmt(item.buying_price)}</td>
                   <td>{fmt(item.selling_price)}</td>
                   <td><strong>{item.stock_quantity}</strong> <span style={{color:'var(--text-muted)',fontSize:'.75rem'}}>{item.unit}</span></td>
                   <td>{getStockBadge(item)}</td>
                   <td>{getExpiryBadge(item) || <span style={{color:'var(--text-muted)'}}>—</span>}</td>
-                  {isAdmin && <td>
+                  <td>
                     <div className="flex-gap">
-                      <button className="btn btn-sm btn-success" onClick={()=>setRestockModal(item)}>Restock</button>
-                      <Link to={`/inventory/edit/${item.id}`} className="btn btn-sm btn-secondary">Edit</Link>
+                      <button className="btn btn-sm btn-ghost" onClick={() => viewDetail(item)}>View</button>
+                      {isAdmin && <>
+                        <button className="btn btn-sm btn-success" onClick={()=>setRestockModal(item)}>Restock</button>
+                        <Link to={`/inventory/edit/${item.id}`} className="btn btn-sm btn-secondary">Edit</Link>
+                        <button className="btn btn-sm btn-danger" onClick={() => handleDelete(item)}>Delete</button>
+                      </>}
                     </div>
-                  </td>}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -122,13 +148,11 @@ export default function Inventory() {
         </div>
       )}
 
+      {/* Restock Modal */}
       {restockModal && (
         <div className="modal-overlay" onClick={()=>setRestockModal(null)}>
           <div className="modal" onClick={e=>e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 className="modal-title">Restock: {restockModal.name}</h3>
-              <button className="modal-close" onClick={()=>setRestockModal(null)}>×</button>
-            </div>
+            <div className="modal-header"><h3 className="modal-title">Restock: {restockModal.name}</h3><button className="modal-close" onClick={()=>setRestockModal(null)}>×</button></div>
             <p style={{marginBottom:16,color:'var(--text-secondary)'}}>Current stock: <strong>{restockModal.stock_quantity} {restockModal.unit}</strong></p>
             <div className="form-group">
               <label className="form-label">Quantity to Add</label>
@@ -138,6 +162,55 @@ export default function Inventory() {
               <button className="btn btn-secondary" onClick={()=>setRestockModal(null)}>Cancel</button>
               <button className="btn btn-success" onClick={handleRestock}>Confirm Restock</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Item Detail Modal with Stock Movements */}
+      {detailModal && (
+        <div className="modal-overlay" onClick={() => setDetailModal(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{maxWidth: 600}}>
+            <div className="modal-header">
+              <h3 className="modal-title">{detailModal.name}</h3>
+              <button className="modal-close" onClick={() => setDetailModal(null)}>×</button>
+            </div>
+
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px 20px', marginBottom: 16 }}>
+              <p><strong>Category:</strong> {detailModal.category_name || '—'}</p>
+              <p><strong>Unit:</strong> {detailModal.unit}</p>
+              <p><strong>Buying Price:</strong> {fmt(detailModal.buying_price)}</p>
+              <p><strong>Selling Price:</strong> {fmt(detailModal.selling_price)}</p>
+              <p><strong>Margin:</strong> {detailModal.profit_margin || 0}%</p>
+              <p><strong>Stock:</strong> {detailModal.stock_quantity} {detailModal.unit}</p>
+              <p><strong>Reorder Level:</strong> {detailModal.reorder_level}</p>
+              <p><strong>Batch #:</strong> {detailModal.batch_number || '—'}</p>
+              <p><strong>Supplier:</strong> {detailModal.supplier_name || detailModal.supplier || '—'}</p>
+              <p><strong>Expiry:</strong> {detailModal.expiry_date ? new Date(detailModal.expiry_date).toLocaleDateString() : '—'}</p>
+            </div>
+            {detailModal.description && <p style={{color:'var(--text-secondary)',marginBottom:16}}>{detailModal.description}</p>}
+
+            <h4 style={{ marginBottom: 8, fontSize: '1rem' }}>📋 Stock Movement History</h4>
+            {movementsLoading ? <div className="loader"><div className="spinner"></div></div> : (
+              <div className="table-container" style={{maxHeight: 300, overflowY:'auto'}}>
+                <table className="table" style={{fontSize:'.85rem'}}>
+                  <thead><tr><th>Date</th><th>Type</th><th>Qty</th><th>Before</th><th>After</th><th>By</th><th>Notes</th></tr></thead>
+                  <tbody>
+                    {movements.length === 0 ? <tr><td colSpan="7" className="text-center text-muted">No movements recorded</td></tr> :
+                    movements.map((m, i) => (
+                      <tr key={i}>
+                        <td style={{whiteSpace:'nowrap'}}>{new Date(m.created_at).toLocaleString()}</td>
+                        <td><span className={`badge badge-${m.movement_type==='sale'?'info':m.movement_type==='restock'?'success':'warning'}`}>{m.movement_type}</span></td>
+                        <td style={{fontWeight:600, color: m.quantity < 0 ? 'var(--danger)' : 'var(--success)'}}>{m.quantity > 0 ? '+' : ''}{m.quantity}</td>
+                        <td>{m.stock_before}</td>
+                        <td>{m.stock_after}</td>
+                        <td>{m.user_name || '—'}</td>
+                        <td style={{maxWidth:120}} className="truncate">{m.notes || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}
